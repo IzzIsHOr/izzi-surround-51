@@ -1,0 +1,264 @@
+/* YouTube-flavoured settings UI.
+   Palette and metrics follow the YouTube dark theme so the page feels like it
+   belongs next to the player's own settings menu. */
+
+:root {
+  --yt-bg: #0f0f0f;
+  --yt-card: #212121;
+  --yt-card-hover: #2a2a2a;
+  --yt-line: #303030;
+  --yt-text: #f1f1f1;
+  --yt-text-2: #aaaaaa;
+  --yt-blue: #3ea6ff;
+  --yt-red: #ff0000;
+  --yt-green: #2ba640;
+}
+
+* { box-sizing: border-box; }
+
+html, body { background: var(--yt-bg); }
+
+body {
+  margin: 0;
+  padding: 40px 24px 72px;
+  color: var(--yt-text);
+  font-family: "Roboto", "YouTube Sans", "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 680px; margin: 0 auto; }
+
+/* ---------- header ---------- */
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.head img { border-radius: 10px; }
+.head-text { flex: 1; min-width: 0; }
+
+.head h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+
+.head p {
+  margin: 2px 0 0;
+  color: var(--yt-text-2);
+  font-size: 13px;
+}
+
+.chip {
+  flex: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--yt-green);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+}
+.chip.on { opacity: 1; transform: none; }
+
+/* ---------- cards ---------- */
+
+.card {
+  background: var(--yt-card);
+  border-radius: 12px;
+  padding: 4px 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card-head {
+  padding: 14px 20px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--yt-text-2);
+  letter-spacing: .3px;
+}
+
+.card-head .note {
+  font-weight: 400;
+  color: #717171;
+}
+
+/* ---------- rows ---------- */
+
+.row {
+  display: grid;
+  grid-template-columns: 24px 1fr 168px 58px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--yt-line);
+  min-height: 56px;
+  transition: background .12s;
+}
+.card .row:first-of-type { border-top: 0; }
+.row:hover { background: var(--yt-card-hover); }
+
+.toggle-row { grid-template-columns: 24px 1fr auto; cursor: pointer; }
+.row-btn { grid-template-columns: 1fr; padding: 16px 20px; }
+.row-btn:hover { background: transparent; }
+
+.txt { display: flex; flex-direction: column; min-width: 0; }
+.txt .t { font-size: 14px; }
+.txt .d {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--yt-text-2);
+}
+
+output {
+  text-align: right;
+  font-size: 13px;
+  color: var(--yt-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- icons (drawn in CSS, no external assets) ---------- */
+
+.ico {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  opacity: .85;
+}
+.ico::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--yt-text);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 22px 22px;
+}
+.ico[data-ico="power"]::before  { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 3a1 1 0 0 1 1 1v7a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1zM7.1 6.3a1 1 0 0 1 0 1.5 6 6 0 1 0 9.8 0 1 1 0 1 1 1.5-1.3 8 8 0 1 1-12.8 0 1 1 0 0 1 1.5-.2z"/></svg>'); }
+.ico[data-ico="auto"]::before   { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>'); }
+.ico[data-ico="width"]::before  { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M2 11h4l3-3v8l-3-3H2v-2zm20 0h-4l-3-3v8l3-3h4v-2zM11 6h2v12h-2z"/></svg>'); }
+.ico[data-ico="delay"]::before  { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7v4l5-5-5-5v4z"/><path fill="black" d="M11 7h2v5.4l3.3 2-1 1.7L11 13.5z"/></svg>'); }
+.ico[data-ico="filter"]::before { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>'); }
+.ico[data-ico="sub"]::before    { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 6.5a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM6.5 4h2v2h-2z"/></svg>'); }
+.ico[data-ico="spk"]::before    { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M4 9h4l5-4v14l-5-4H4V9zm12.5-1.3a5 5 0 0 1 0 8.6l-1-1.7a3 3 0 0 0 0-5.2zM19 4.9a9 9 0 0 1 0 14.2l-1-1.7a7 7 0 0 0 0-10.8z"/></svg>'); }
+.ico[data-ico="level"]::before  { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M4 20h3V10H4v10zm6.5 0h3V4h-3v16zM17 20h3v-7h-3v7z"/></svg>'); }
+
+/* ---------- sliders (YouTube volume-bar styling) ---------- */
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: #5a5a5a;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--yt-text);
+  border: 0;
+  transition: transform .1s;
+}
+.row:hover input[type=range]::-webkit-slider-thumb { transform: scale(1.15); }
+input[type=range]:active::-webkit-slider-thumb { transform: scale(1.25); }
+
+/* ---------- toggles (YouTube player switch) ---------- */
+
+.tgl {
+  -webkit-appearance: none;
+  position: relative;
+  width: 36px;
+  height: 14px;
+  border-radius: 7px;
+  background: #4d4d4d;
+  cursor: pointer;
+  margin: 0;
+  transition: background .15s;
+}
+.tgl::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #bdbdbd;
+  box-shadow: 0 1px 3px rgba(0,0,0,.5);
+  transition: transform .15s, background .15s;
+}
+.tgl:checked { background: rgba(255,255,255,.45); }
+.tgl:checked::after { transform: translateX(16px); background: #fff; }
+
+/* ---------- button ---------- */
+
+.btn {
+  padding: 9px 16px;
+  border: 1px solid #3f3f3f;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--yt-text);
+  font: 500 14px/20px inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.btn:hover { background: #3f3f3f; border-color: #4f4f4f; }
+
+/* ---------- status ---------- */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  background: var(--yt-card);
+  font-size: 13px;
+  color: var(--yt-text-2);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #717171;
+  flex: none;
+}
+.dot.ok { background: var(--yt-green); }
+.dot.bad { background: var(--yt-red); }
+
+/* ---------- footer ---------- */
+
+.foot { color: var(--yt-text-2); font-size: 12.5px; line-height: 18px; }
+.foot p { margin: 6px 0; }
+.foot b { color: #d0d0d0; font-weight: 500; }
+.foot a { color: var(--yt-blue); text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
+.foot .by { margin-top: 14px; }
+
+kbd {
+  padding: 1px 5px;
+  border: 1px solid #3f3f3f;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #181818;
+  font: 11px/16px "Roboto Mono", Consolas, monospace;
+  color: #d0d0d0;
+}

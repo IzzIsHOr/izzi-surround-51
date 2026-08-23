@@ -1,0 +1,10 @@
+# build output
+*.zip
+dist/
+
+# editors / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+*~
