@@ -70,6 +70,7 @@ body {
   pointer-events: none;
 }
 .chip.on { opacity: 1; transform: none; }
+.chip.warn { background: #8a6d00; }
 
 /* ---------- cards ---------- */
 
