@@ -32,7 +32,7 @@
 
   const dB = v => Math.pow(10, v / 20);
 
-  let ctx, src, video, gBypass, gOut, N = null;
+  let ctx, src, video, gBypass, gOut, N = null, M = null;
   let built = false;
 
   // ---------------------------- audio graph ----------------------------
@@ -117,6 +117,18 @@
       gOut.gain.value = 0;
       mg.connect(gOut);
       gOut.connect(dst);
+
+      // Analysers on every output branch. They cost almost nothing and make the
+      // whole chain measurable instead of guessable -- see meters() below.
+      M = {};
+      const tap = (node, name) => {
+        const a = ctx.createAnalyser();
+        a.fftSize = 256;
+        node.connect(a);
+        M[name] = a;
+      };
+      tap(oFL, 'FL'); tap(oFR, 'FR'); tap(oC, 'C');
+      tap(oLFE, 'LFE'); tap(oRL, 'RL'); tap(oRR, 'RR');
 
       N = { mLR, mRL, rlF, rrF, rlD, rrD, lfeF, oFL, oFR, oC, oLFE, oRL, oRR };
       built = true;
@@ -256,7 +268,39 @@
       settings: Object.assign({}, S)
     }),
     set: patch => { Object.assign(S, patch); applyAll(); save(patch); return S; },
-    on: setEnabled
+    on: setEnabled,
+
+    // Live values read back off the audio nodes themselves, not off the
+    // settings object. If a control ever looks inert, compare this with
+    // status().settings -- they must agree.
+    debug: () => built ? {
+      rearWidth: N.mLR.gain.value,
+      rearDelayMs: +(N.rlD.delayTime.value * 1000).toFixed(1),
+      rearLowPassHz: N.rlF.frequency.value,
+      subCrossoverHz: N.lfeF.frequency.value,
+      trimLinear: {
+        FL: +N.oFL.gain.value.toFixed(3), FR: +N.oFR.gain.value.toFixed(3),
+        C: +N.oC.gain.value.toFixed(3), LFE: +N.oLFE.gain.value.toFixed(3),
+        RL: +N.oRL.gain.value.toFixed(3), RR: +N.oRR.gain.value.toFixed(3)
+      },
+      outputGain: +gOut.gain.value.toFixed(3),
+      bypassGain: +gBypass.gain.value.toFixed(3)
+    } : 'graph not built',
+
+    // Instant level per channel, in dB. Call it while something is playing.
+    meters: () => {
+      if (!built) return 'graph not built';
+      const out = {};
+      const buf = new Float32Array(256);
+      for (const k of Object.keys(M)) {
+        M[k].getFloatTimeDomainData(buf);
+        let s = 0;
+        for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+        const rms = Math.sqrt(s / buf.length);
+        out[k] = rms > 0 ? +(20 * Math.log10(rms)).toFixed(1) : -Infinity;
+      }
+      return out;
+    }
   };
 
   console.log(TAG, 'ready');
