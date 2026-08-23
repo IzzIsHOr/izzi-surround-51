@@ -64,6 +64,15 @@ It turns itself on. The state is remembered between sessions.
 | Channel mixer | Individual trim in dB for FL, FR, C, LFE, RL, RR |
 | Headroom | Lower it if loud passages distort |
 
+### Presets
+
+Four built-in starting points — **Balanced**, **Subtle**, **Cinema**, **Music** — plus your own:
+name the current settings and save them. Saved presets live in your Chrome profile and sync
+across devices. **Reset to defaults** is always there if you want to start over.
+
+Presets carry the sound only, never the on/off state, so loading one can never silently mute
+or unmute the extension.
+
 ## Requirements
 
 Your speakers must be configured as **5.1 in Windows**

@@ -123,8 +123,36 @@
       <input type="range"><output></output>
     </div>
 
+  </div>
+
+  <div class="card">
+    <div class="card-head">Presets <span class="note">everything except the on/off state</span></div>
+
+    <div class="row row-wide">
+      <span class="ico" data-ico="preset"></span>
+      <span class="txt">
+        <span class="t">Quick presets</span>
+        <span class="d">Starting points you can tweak afterwards</span>
+      </span>
+      <div class="chips" id="builtins"></div>
+    </div>
+
+    <div class="row row-wide">
+      <span class="ico" data-ico="save"></span>
+      <span class="txt">
+        <span class="t">Save current settings</span>
+        <span class="d">Stored in your Chrome profile and synced across devices</span>
+      </span>
+      <div class="save-box">
+        <input type="text" id="presetName" placeholder="Preset name" maxlength="32" spellcheck="false">
+        <button id="savePreset" class="btn">Save</button>
+      </div>
+    </div>
+
+    <div id="presetList"></div>
+
     <div class="row row-btn">
-      <button id="reset" class="btn">Reset to defaults</button>
+      <button id="reset" class="btn btn-ghost">Reset to defaults</button>
     </div>
   </div>
 
