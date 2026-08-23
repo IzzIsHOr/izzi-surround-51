@@ -4,6 +4,22 @@ const DEFAULTS = {
   gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0
 };
 
+// A preset captures the sound, not the on/off state -- loading one should never
+// silently mute or unmute the extension.
+const SOUND_KEYS = ['surr', 'surrDelay', 'surrLP', 'lfeLP', 'preamp',
+                    'gFL', 'gFR', 'gC', 'gLFE', 'gRL', 'gRR'];
+
+const BUILTINS = {
+  Balanced: { surr: 0.6, surrDelay: 15, surrLP: 7000, lfeLP: 120, preamp: -2,
+              gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0 },
+  Subtle:   { surr: 0.35, surrDelay: 12, surrLP: 5500, lfeLP: 100, preamp: -1,
+              gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0 },
+  Cinema:   { surr: 0.85, surrDelay: 20, surrLP: 9000, lfeLP: 140, preamp: -3,
+              gFL: 0, gFR: 0, gC: 2, gLFE: 2, gRL: 0, gRR: 0 },
+  Music:    { surr: 0.5, surrDelay: 10, surrLP: 12000, lfeLP: 90, preamp: -2,
+              gFL: 0, gFR: 0, gC: -1.5, gLFE: 0, gRL: 0, gRR: 0 }
+};
+
 const badge = document.getElementById('saved');
 let badgeTimer;
 
@@ -100,16 +116,122 @@ chrome.storage.sync.get(DEFAULTS, paint);
 // keep in sync with the player toggle, but never yank a slider out from under
 // the cursor while it is being dragged
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== 'sync' || dragging) return;
-  chrome.storage.sync.get(DEFAULTS, paint);
+  if (area !== 'sync') return;
+  if (!dragging) chrome.storage.sync.get(DEFAULTS, paint);
+  if (changes.presets) renderPresets(changes.presets.newValue || {});
 });
 
 document.getElementById('reset').addEventListener('click', () => {
   clearTimeout(writeTimer);
   writeTimer = null;
   for (const k of Object.keys(pending)) delete pending[k];
-  chrome.storage.sync.set(DEFAULTS, () => { paint(DEFAULTS); flash(); });
+  chrome.storage.sync.set(DEFAULTS, () => { paint(DEFAULTS); flash('Reset'); });
 });
+
+// ---------- presets ----------
+function applyPreset(values) {
+  const patch = {};
+  SOUND_KEYS.forEach(k => { if (k in values) patch[k] = values[k]; });
+  clearTimeout(writeTimer);
+  writeTimer = null;
+  chrome.storage.sync.set(patch, () => {
+    chrome.storage.sync.get(DEFAULTS, paint);
+    flash('Loaded');
+  });
+}
+
+function currentSound() {
+  const snap = {};
+  sliders.forEach(s => { if (SOUND_KEYS.includes(s.key)) snap[s.key] = Number(s.input.value); });
+  return snap;
+}
+
+function describe(v) {
+  return `width ${v.surr} · rear ${v.surrDelay} ms / ${(v.surrLP / 1000).toFixed(1)} kHz · sub ${v.lfeLP} Hz`;
+}
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+// built-in quick presets
+const builtinBox = document.getElementById('builtins');
+Object.keys(BUILTINS).forEach(name => {
+  const b = el('button', 'chip-btn', name);
+  b.addEventListener('click', () => applyPreset(BUILTINS[name]));
+  builtinBox.appendChild(b);
+});
+
+const listBox = document.getElementById('presetList');
+
+function renderPresets(presets) {
+  listBox.textContent = '';
+  const names = Object.keys(presets).sort((a, b) => a.localeCompare(b));
+
+  if (!names.length) {
+    listBox.appendChild(el('div', 'empty', 'No saved presets yet.'));
+    return;
+  }
+
+  names.forEach(name => {
+    const row = el('div', 'preset');
+    row.appendChild(el('span', 'ico', ''));
+    row.firstChild.dataset.ico = 'preset';
+
+    const txt = el('div');
+    txt.appendChild(el('div', 'nm', name));
+    txt.appendChild(el('div', 'meta', describe(presets[name])));
+    row.appendChild(txt);
+
+    const actions = el('div', 'preset-actions');
+    const load = el('button', 'link-btn', 'Load');
+    load.addEventListener('click', () => applyPreset(presets[name]));
+    const del = el('button', 'link-btn danger', 'Delete');
+    del.addEventListener('click', () => {
+      chrome.storage.sync.get({ presets: {} }, data => {
+        delete data.presets[name];
+        chrome.storage.sync.set({ presets: data.presets }, () => {
+          renderPresets(data.presets);
+          flash('Deleted');
+        });
+      });
+    });
+    actions.append(load, del);
+    row.appendChild(actions);
+
+    listBox.appendChild(row);
+  });
+}
+
+const nameInput = document.getElementById('presetName');
+
+function savePreset() {
+  const name = nameInput.value.trim();
+  if (!name) { nameInput.focus(); return; }
+
+  chrome.storage.sync.get({ presets: {} }, data => {
+    const existed = name in data.presets;
+    data.presets[name] = currentSound();
+    chrome.storage.sync.set({ presets: data.presets }, () => {
+      if (chrome.runtime.lastError) {
+        console.warn('[IzzI Surround 5.1] preset save failed:', chrome.runtime.lastError.message);
+        flash('Throttled');
+        return;
+      }
+      nameInput.value = '';
+      renderPresets(data.presets);
+      flash(existed ? 'Updated' : 'Saved');
+    });
+  });
+}
+
+document.getElementById('savePreset').addEventListener('click', savePreset);
+nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') savePreset(); });
+
+chrome.storage.sync.get({ presets: {} }, data => renderPresets(data.presets));
 
 // ---------- speaker configuration check ----------
 // The output device is the same one YouTube tabs render to, so probing it here
