@@ -138,7 +138,12 @@ Upmix YouTube's stereo audio to discrete 5.1 surround for playback on 5.1 speake
   under the settings gear. That one cannot be captured headlessly because it needs a real
   YouTube page with the extension loaded. Take it with a normal screenshot tool at
   1280×800.
-- **Small promo tile** (optional but recommended): 440×280 PNG.
+- **Small promo tile** (440x280): `dist/promo/small-promo-440x280.png`
+- **Marquee promo tile** (1400x560): `dist/promo/marquee-promo-1400x560.png`
+
+  Both come from `dev/promo.html` via `node dev/promo.cjs`. The marquee shows
+  the six channels laid out the way they sit in a room. The script re-encodes
+  them without an alpha channel, which the store requires.
 
 `icons/icon128.png` already covers the store icon requirement.
 

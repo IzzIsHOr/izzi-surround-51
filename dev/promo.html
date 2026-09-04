@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Promo tiles</title>
+    <style>
+      /* Store promo tiles. ?tile=small gives 440x280, ?tile=marquee 1400x560.
+         Fully opaque on purpose: the store rejects images with an alpha channel. */
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      html,
+      body {
+        background: #14161a;
+      }
+
+      .tile {
+        position: relative;
+        overflow: hidden;
+        display: none;
+        font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, Arial, sans-serif;
+        color: #fff;
+        background: linear-gradient(145deg, #23262d 0%, #16181c 55%, #0e0f12 100%);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body[data-tile="small"] .tile.small,
+      body[data-tile="marquee"] .tile.marquee {
+        display: flex;
+      }
+
+      /* a warm bloom, echoing the arc in the icon */
+      .tile::before {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(239, 68, 68, 0.22), transparent 66%);
+      }
+
+      /* ------------------------------------------------------------ small */
+
+      .tile.small {
+        width: 440px;
+        height: 280px;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 38px;
+      }
+
+      .tile.small::before {
+        width: 460px;
+        height: 460px;
+        top: -230px;
+        right: -170px;
+      }
+
+      .tile.small .mark {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .tile.small h1 {
+        font-size: 34px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        position: relative;
+        z-index: 1;
+      }
+
+      .tile.small p {
+        margin-top: 9px;
+        font-size: 16.5px;
+        line-height: 1.4;
+        color: rgba(255, 255, 255, 0.82);
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ---------------------------------------------------------- marquee */
+
+      .tile.marquee {
+        width: 1400px;
+        height: 560px;
+        align-items: center;
+        padding: 0 92px;
+        gap: 80px;
+      }
+
+      .tile.marquee::before {
+        width: 900px;
+        height: 900px;
+        top: -420px;
+        right: -260px;
+      }
+
+      .copy {
+        position: relative;
+        z-index: 1;
+        flex: 0 0 560px;
+      }
+
+      .copy .mark {
+        width: 92px;
+        height: 92px;
+        margin-bottom: 26px;
+      }
+
+      .copy h1 {
+        font-size: 55px;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.05;
+      }
+
+      .copy p {
+        margin-top: 16px;
+        font-size: 21px;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .copy ul {
+        margin-top: 26px;
+        padding: 0;
+        list-style: none;
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      .copy li {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin-bottom: 11px;
+      }
+
+      .copy li i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #ef4444;
+        flex: 0 0 auto;
+      }
+
+      /* the six channels, laid out the way they sit in a room */
+
+      .room {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        height: 380px;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .spk {
+        position: absolute;
+        width: 74px;
+        text-align: center;
+        transform: translate(-50%, -50%);
+      }
+
+      .spk b {
+        display: block;
+        width: 46px;
+        height: 46px;
+        margin: 0 auto 8px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 44px;
+      }
+
+      .spk.front b {
+        background: rgba(239, 68, 68, 0.9);
+        border-color: rgba(239, 68, 68, 0.9);
+      }
+
+      .spk.sub b {
+        border-radius: 50%;
+        background: rgba(251, 191, 36, 0.9);
+        border-color: rgba(251, 191, 36, 0.9);
+        color: #1a1a1a;
+      }
+
+      .spk span {
+        font-size: 12.5px;
+        color: rgba(255, 255, 255, 0.62);
+      }
+
+      .seat {
+        position: absolute;
+        left: 50%;
+        top: 52%;
+        transform: translate(-50%, -50%);
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        border: 1px dashed rgba(255, 255, 255, 0.28);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tile small">
+      <img class="mark" src="/icons/icon128.png" alt="" />
+      <h1>IzzI Surround 5.1</h1>
+      <p>Real 5.1 for YouTube, in the browser.<br />No drivers, no virtual devices.</p>
+    </div>
+
+    <div class="tile marquee">
+      <div class="copy">
+        <img class="mark" src="/icons/icon128.png" alt="" />
+        <h1>IzzI Surround 5.1</h1>
+        <p>Real 5.1 surround for YouTube, right in the browser.</p>
+        <ul>
+          <li><i></i>No Equalizer APO, no virtual audio device</li>
+          <li><i></i>Dialogue anchored to the centre channel</li>
+          <li><i></i>Per-channel trim and a full matrix mixer</li>
+          <li><i></i>Toggle from the player, or Alt+5</li>
+        </ul>
+      </div>
+
+      <div class="room">
+        <div class="spk front" style="left: 22%; top: 17%"><b>FL</b><span>Front left</span></div>
+        <div class="spk front" style="left: 50%; top: 11%"><b>C</b><span>Centre</span></div>
+        <div class="spk front" style="left: 78%; top: 17%"><b>FR</b><span>Front right</span></div>
+        <div class="spk sub" style="left: 50%; top: 79%"><b>LFE</b><span>Subwoofer</span></div>
+        <div class="spk" style="left: 17%; top: 76%"><b>RL</b><span>Rear left</span></div>
+        <div class="spk" style="left: 83%; top: 76%"><b>RR</b><span>Rear right</span></div>
+        <div class="seat"></div>
+      </div>
+    </div>
+
+    <script>
+      document.body.dataset.tile =
+        new URLSearchParams(location.search).get("tile") || "small";
+    </script>
+  </body>
+</html>
