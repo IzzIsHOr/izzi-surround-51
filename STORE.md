@@ -118,34 +118,37 @@ Upmix YouTube's stereo audio to discrete 5.1 surround for playback on 5.1 speake
 
 ## Assets
 
-- **Store icon**: `icons/icon128.png` already covers it.
-- **Screenshot**: `dist/shots/01-options.png`, 1280×800, the options page.
+Everything below is generated. Start the dev server, then run the two scripts:
 
-  Regenerate it by running the dev server and capturing with headless Chrome:
+```
+node dev/server.cjs
+node dev/shots.cjs
+node dev/promo.cjs
+```
 
-  ```
-  node dev/server.cjs
-  "C:/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --disable-gpu ^
-    --hide-scrollbars --window-size=1280,800 --virtual-time-budget=5000 ^
-    --screenshot=dist/shots/01-options.png "http://localhost:5178/dev-preview.html?nofx=1"
-  ```
+- **Store icon** (128x128): `dist/promo/store-icon-128.png`
 
-  `dev/` and `dev-preview.html` are not part of the extension; the shim only fakes the
-  chrome.* calls the options page makes so it can render outside the browser extension
-  context.
+  Not `icons/icon128.png`. The store uploads its listing icon separately from
+  the ones in the package, and Google asks for 96x96 of artwork inside a 128px
+  canvas. The packaged icon fills all 128 and would render larger than every
+  neighbouring extension.
 
-- **Still worth adding by hand**: a shot of the YouTube player with the toggle in place,
-  under the settings gear. That one cannot be captured headlessly because it needs a real
-  YouTube page with the extension loaded. Take it with a normal screenshot tool at
-  1280×800.
+- **Screenshots** (1280x800): `dist/shots/01-options.png` through `03-options.png`
+
+  The options page is taller than 800px, so it is captured whole and sliced.
+  `shots.cjs` measures where the content ends by scanning the capture, rather
+  than trusting a hardcoded height: the height differs with viewport width, and
+  a hardcoded one produced blank slices.
+
 - **Small promo tile** (440x280): `dist/promo/small-promo-440x280.png`
 - **Marquee promo tile** (1400x560): `dist/promo/marquee-promo-1400x560.png`
 
-  Both come from `dev/promo.html` via `node dev/promo.cjs`. The marquee shows
-  the six channels laid out the way they sit in a room. The script re-encodes
-  them without an alpha channel, which the store requires.
+  The marquee lays the six channels out the way they sit in a room, which says
+  what the extension does faster than the options page can.
 
-`icons/icon128.png` already covers the store icon requirement.
+- **Still worth adding by hand**: a shot of the YouTube player with the toggle
+  in place, under the settings gear. It cannot be captured headlessly because it
+  needs a real YouTube page with the extension loaded.
 
 ## Review notes
 
