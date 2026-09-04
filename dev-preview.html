@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>IzzI Surround 5.1</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <img src="icons/icon48.png" alt="" width="40" height="40">
+    <div class="head-text">
+      <h1>IzzI Surround 5.1</h1>
+      <p>Discrete 5.1 upmixing for YouTube, in the browser</p>
+    </div>
+    <span class="chip" id="saved">Saved</span>
+  </header>
+
+  <div class="card">
+    <div class="card-head">Playback</div>
+
+    <label class="row toggle-row">
+      <span class="ico" data-ico="power"></span>
+      <span class="txt"><span class="t">Enabled</span></span>
+      <input type="checkbox" id="enabled" class="tgl">
+    </label>
+
+    <label class="row toggle-row">
+      <span class="ico" data-ico="auto"></span>
+      <span class="txt">
+        <span class="t">Turn on automatically</span>
+        <span class="d">Activates itself on every new video</span>
+      </span>
+      <input type="checkbox" id="autoEnable" class="tgl">
+    </label>
+  </div>
+
+  <div class="card">
+    <div class="card-head">Surround matrix</div>
+
+    <div class="row" data-key="surr" data-min="0" data-max="1.2" data-step="0.05" data-unit="">
+      <span class="ico" data-ico="width"></span>
+      <span class="txt">
+        <span class="t">Rear width</span>
+        <span class="d">How much difference signal reaches the back. 0.4 subtle, 0.8 aggressive.</span>
+      </span>
+      <input type="range"><output></output>
+    </div>
+
+    <div class="row" data-key="surrDelay" data-min="0" data-max="40" data-step="1" data-unit=" ms">
+      <span class="ico" data-ico="delay"></span>
+      <span class="txt">
+        <span class="t">Rear delay</span>
+        <span class="d">Haas effect — keeps the source anchored up front</span>
+      </span>
+      <input type="range"><output></output>
+    </div>
+
+    <div class="row" data-key="surrLP" data-min="2000" data-max="20000" data-step="500" data-unit=" Hz">
+      <span class="ico" data-ico="filter"></span>
+      <span class="txt">
+        <span class="t">Rear low-pass</span>
+        <span class="d">Above this frequency the rears stay quiet</span>
+      </span>
+      <input type="range"><output></output>
+    </div>
+
+    <div class="row" data-key="lfeLP" data-min="60" data-max="250" data-step="5" data-unit=" Hz">
+      <span class="ico" data-ico="sub"></span>
+      <span class="txt">
+        <span class="t">Subwoofer crossover</span>
+        <span class="d">Only content below this reaches the sub</span>
+      </span>
+      <input type="range"><output></output>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">Channel mixer <span class="note">individual trim, in dB</span></div>
+
+    <div class="row" data-key="gFL" data-min="-24" data-max="12" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="spk"></span>
+      <span class="txt"><span class="t">Front left</span></span>
+      <input type="range"><output></output>
+    </div>
+    <div class="row" data-key="gFR" data-min="-24" data-max="12" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="spk"></span>
+      <span class="txt"><span class="t">Front right</span></span>
+      <input type="range"><output></output>
+    </div>
+    <div class="row" data-key="gC" data-min="-24" data-max="12" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="spk"></span>
+      <span class="txt"><span class="t">Center</span><span class="d">Dialogue and vocals</span></span>
+      <input type="range"><output></output>
+    </div>
+    <div class="row" data-key="gLFE" data-min="-24" data-max="12" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="sub"></span>
+      <span class="txt"><span class="t">Subwoofer</span></span>
+      <input type="range"><output></output>
+    </div>
+    <div class="row" data-key="gRL" data-min="-24" data-max="12" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="spk"></span>
+      <span class="txt"><span class="t">Back left</span></span>
+      <input type="range"><output></output>
+    </div>
+    <div class="row" data-key="gRR" data-min="-24" data-max="12" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="spk"></span>
+      <span class="txt"><span class="t">Back right</span></span>
+      <input type="range"><output></output>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">Output</div>
+
+    <div class="row" data-key="preamp" data-min="-12" data-max="6" data-step="0.5" data-unit=" dB">
+      <span class="ico" data-ico="level"></span>
+      <span class="txt">
+        <span class="t">Headroom</span>
+        <span class="d">Lower it if loud passages distort</span>
+      </span>
+      <input type="range"><output></output>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-head">Presets <span class="note">everything except the on/off state</span></div>
+
+    <div class="row row-wide">
+      <span class="ico" data-ico="preset"></span>
+      <span class="txt">
+        <span class="t">Quick presets</span>
+        <span class="d">Starting points you can tweak afterwards</span>
+      </span>
+      <div class="chips" id="builtins"></div>
+    </div>
+
+    <div class="row row-wide">
+      <span class="ico" data-ico="save"></span>
+      <span class="txt">
+        <span class="t">Save current settings</span>
+        <span class="d">Stored in your Chrome profile and synced across devices</span>
+      </span>
+      <div class="save-box">
+        <input type="text" id="presetName" placeholder="Preset name" maxlength="32" spellcheck="false">
+        <button id="savePreset" class="btn">Save</button>
+      </div>
+    </div>
+
+    <div id="presetList"></div>
+
+    <div class="row row-btn">
+      <button id="reset" class="btn btn-ghost">Reset to defaults</button>
+    </div>
+  </div>
+
+  <div class="status" id="status">
+    <span class="dot" id="dot"></span>
+    <span id="statusText">Checking speaker configuration…</span>
+  </div>
+
+  <footer class="foot">
+    <p>Changes apply instantly to open YouTube tabs. Toggle it from the player too: <b>settings gear → IzzI Surround 5.1</b>, or press <kbd>Alt</kbd>+<kbd>5</kbd>.</p>
+    <p>Your speakers must be set to <b>5.1 in Windows</b>. Nothing is installed system-wide, and no data ever leaves your machine.</p>
+    <p class="by">by <b>IzzIsHOr</b> · <a href="https://github.com/IzzIsHOr/izzi-surround-51" target="_blank" rel="noreferrer">GitHub</a></p>
+  </footer>
+
+</div>
+<script src="dev/shim.js"></script>
+    <script src="options.js"></script>
+</body>
+</html>

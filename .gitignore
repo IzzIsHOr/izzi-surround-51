@@ -8,3 +8,6 @@ dist/
 Thumbs.db
 desktop.ini
 *~
+
+# build and capture output
+dist/
