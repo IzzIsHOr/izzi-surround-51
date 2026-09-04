@@ -114,6 +114,15 @@ No. All code is contained in the package.
 Upmix YouTube's stereo audio to discrete 5.1 surround for playback on 5.1 speaker systems.
 ```
 
+## Privacy policy URL
+
+The dashboard requires one as soon as an item holds user data, which `storage`
+counts as.
+
+```
+https://github.com/IzzIsHOr/izzi-surround-51/blob/main/PRIVACY.md
+```
+
 ---
 
 ## Assets
