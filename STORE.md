@@ -1,6 +1,6 @@
 # Chrome Web Store submission
 
-Copy-paste material for the developer dashboard. Upload `izzi-surround-51-v3.0.0.zip`.
+Copy-paste material for the developer dashboard. Upload `izzi-surround-51-v3.2.0.zip`.
 
 > Publishing requires a Chrome Web Store developer account (one-time $5 registration fee)
 > and has to be done from the dashboard by the account owner:
@@ -116,13 +116,28 @@ Upmix YouTube's stereo audio to discrete 5.1 surround for playback on 5.1 speake
 
 ---
 
-## Assets still needed
+## Assets
 
-The dashboard will not accept a submission without these, and they cannot be generated from
-the source — they have to be captured:
+- **Store icon**: `icons/icon128.png` already covers it.
+- **Screenshot**: `dist/shots/01-options.png`, 1280×800, the options page.
 
-- **Screenshots**: at least one, 1280×800 or 640×400 PNG. Best candidates are the options page
-  and the player settings menu showing the toggle in place.
+  Regenerate it by running the dev server and capturing with headless Chrome:
+
+  ```
+  node dev/server.cjs
+  "C:/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --disable-gpu ^
+    --hide-scrollbars --window-size=1280,800 --virtual-time-budget=5000 ^
+    --screenshot=dist/shots/01-options.png "http://localhost:5178/dev-preview.html?nofx=1"
+  ```
+
+  `dev/` and `dev-preview.html` are not part of the extension; the shim only fakes the
+  chrome.* calls the options page makes so it can render outside the browser extension
+  context.
+
+- **Still worth adding by hand**: a shot of the YouTube player with the toggle in place,
+  under the settings gear. That one cannot be captured headlessly because it needs a real
+  YouTube page with the extension loaded. Take it with a normal screenshot tool at
+  1280×800.
 - **Small promo tile** (optional but recommended): 440×280 PNG.
 
 `icons/icon128.png` already covers the store icon requirement.
