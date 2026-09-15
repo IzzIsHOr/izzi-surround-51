@@ -321,7 +321,40 @@ input[type=range]:active::-webkit-slider-thumb { transform: scale(1.25); }
 .foot b { color: #d0d0d0; font-weight: 500; }
 .foot a { color: var(--yt-blue); text-decoration: none; }
 .foot a:hover { text-decoration: underline; }
-.foot .by { margin-top: 14px; }
+.foot .by { margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Sits at the very bottom of the options page and nowhere else, so it is there
+   if someone goes looking and never in the way of anyone who is not. */
+.foot .coffee {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.foot .coffee-line {
+  font-size: 11.5px;
+  color: var(--yt-text-2);
+}
+
+.foot .coffee-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid #333;
+  border-radius: 999px;
+  color: var(--yt-text-2);
+  font-size: 12px;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.foot .coffee-btn:hover {
+  border-color: #fbbf24;
+  color: #fbbf24;
+  text-decoration: none;
+}
 
 kbd {
   padding: 1px 5px;
