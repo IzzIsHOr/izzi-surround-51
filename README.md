@@ -1,42 +1,37 @@
-<img src="icons/icon128.png" width="72" align="right" alt="">
+# IzzI 5.1 YouTube Enhancements
 
-# IzzI Surround 5.1
+Four things YouTube does not give you, in one extension: real 5.1 surround,
+extra volume, a fill-screen crop, and borderless picture-in-picture.
 
-Discrete **5.1 upmixing for YouTube**, running entirely in the browser.
+Everything runs inside the YouTube tab. Nothing is installed system-wide, no
+drivers, no virtual audio devices, and no network requests of any kind.
 
-Nothing is installed system-wide — no Equalizer APO, no virtual audio device, no separate
-player. It lives inside the YouTube tab, so games and every other application are left
-completely untouched.
+## What it does
 
-This exists because nothing like it did. Firefox has *Stereo to 7.1 Surround Upmixer*.
-Chrome had nothing.
+**Real 5.1 surround.** A Dolby Surround / Hafler style matrix: centre carries
+L+R so dialogue is anchored, the rears carry L-R so only ambience reaches the
+back, the subwoofer gets a low-passed feed, and a 15 ms Haas delay keeps the
+source localised up front. Your speakers must be set to 5.1 in Windows; the
+options page says plainly if the output device reports fewer than six channels.
 
----
+**Extra volume,** up to 500%, for videos mixed too quietly. A limiter catches
+the peaks, and its ratio follows the boost so it is a straight wire at 1x
+rather than quietly compressing everything.
 
-## How it works
+**Fill screen.** A 16:9 video on a 4:3 or ultrawide monitor letterboxes; this
+crops it to fill instead. CSS only, so it cannot disturb the audio graph.
 
-Chrome can output **six discrete channels** from a tab. With speakers configured as 5.1 in
-Windows, `AudioDestinationNode.maxChannelCount` reports `6`. The widely repeated claim that
-"Chrome only does stereo" is out of date.
+**Picture-in-picture.** Native, so the window has no border and no title bar,
+sizes itself to the video and stays on top. It leaves the video element in the
+page, which is why the six channel graph keeps running while it is open;
+Document PiP would move the element and strand the audio source node.
 
-The extension builds a Web Audio graph on the player's `<video>` element and spreads the
-stereo signal across those six channels using a **Dolby Surround / Hafler style matrix**:
+## Where the controls are
 
-```
-FL  = L                        FR  = R
-C   = (L+R)/2                  LFE = low-passed (L+R)/2
-RL  = (L−R) × width            RR  = (R−L) × width      → low-pass + Haas delay
-```
-
-The rears carry the **difference**, not a copy. Anything common to both channels — dialogue,
-bass, whatever sits centred in the mix — cancels out and never reaches the back. What survives
-is ambience and reverb. The delay is the Haas effect: the brain keeps localising the source up
-front while the rears supply the sense of a room.
-
-Measured on *Big Buck Bunny*, with an analyser on every branch, the rears sit between
-**−11.5 dB** (centred content) and **−0.6 dB** (wide ambience) relative to the front channels.
-The ratio tracks how decorrelated the source is, which is exactly what a matrix should do —
-a plain copy of L/R would sit at a fixed offset.
+The toolbar panel has all four. Surround, fill screen and picture-in-picture
+are also in the player's settings gear, next to Voice boost. The options page
+holds the full mixer: rear width, rear delay, rear low-pass, subwoofer
+crossover, headroom, per-channel dB trim, and savable presets.
 
 ## Install
 
@@ -49,9 +44,10 @@ It turns itself on. The state is remembered between sessions.
 
 ## Using it
 
-- **In the player**: settings gear → **IzzI Surround 5.1**, right under *Voice boost*
-- **Shortcut**: <kbd>Alt</kbd>+<kbd>5</kbd>
-- **Settings**: right-click the toolbar icon → *Options*
+- **Toolbar panel**: click the extension's button for all four controls
+- **In the player**: settings gear → **IzzI 5.1 surround**, **Fill screen** and
+  **Picture-in-picture**, right under *Voice boost*
+- **Full mixer**: the gear inside the panel, or right-click the toolbar icon → *Options*
 
 ### What you can tune
 
@@ -71,7 +67,8 @@ name the current settings and save them. Saved presets live in your Chrome profi
 across devices. **Reset to defaults** is always there if you want to start over.
 
 Presets carry the sound only, never the on/off state, so loading one can never silently mute
-or unmute the extension.
+or unmute the extension. Extra volume is part of a preset; fill screen is a picture setting
+and stays out of them.
 
 ## Requirements
 

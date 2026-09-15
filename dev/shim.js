@@ -5,17 +5,32 @@
   const store = {};
 
   window.chrome = {
-    runtime: { lastError: null },
+    runtime: {
+      lastError: null,
+      openOptionsPage() { console.warn('[shim] openOptionsPage'); }
+    },
+    // the popup asks which tab is in front, and talks to the content script
+    tabs: {
+      async query() {
+        return [{ id: 1, url: 'https://www.youtube.com/watch?v=demo', title: 'YouTube' }];
+      },
+      async sendMessage() { return { ok: true, active: false }; }
+    },
     storage: {
       sync: {
-        // The page passes its DEFAULTS in, so echoing them back paints the page
+        // The page passes its DEFAULTS in, so echoing them back paints it
         // exactly as a fresh install looks, which is what a screenshot wants.
+        // Both call styles have to work: options.js passes a callback, the
+        // popup awaits the promise.
         get(defaults, cb) {
-          cb(Object.assign({}, defaults, store));
+          const out = Object.assign({}, defaults, store);
+          if (typeof cb === 'function') return cb(out);
+          return Promise.resolve(out);
         },
         set(patch, cb) {
           Object.assign(store, patch);
-          if (cb) cb();
+          if (typeof cb === 'function') return cb();
+          return Promise.resolve();
         }
       },
       onChanged: { addListener() {} }

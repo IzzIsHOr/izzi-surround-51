@@ -22,6 +22,25 @@ const TALL = 2600; // generous; the real content height is measured below
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
+// The toolbar panel, framed on a 1280x800 backdrop. It renders the real popup
+// in an iframe rather than a mock-up, so the shot cannot drift from what ships.
+const panelFile = path.join(OUT, "00-panel.png");
+execFileSync(
+  CHROME,
+  [
+    "--headless=new",
+    "--disable-gpu",
+    "--hide-scrollbars",
+    "--force-device-scale-factor=1",
+    "--window-size=1280,800",
+    "--virtual-time-budget=6000",
+    "--screenshot=" + panelFile,
+    "http://localhost:5178/dev/shot-popup.html"
+  ],
+  { stdio: ["ignore", "ignore", "ignore"] }
+);
+console.log("00-panel.png  1280x800  the toolbar panel");
+
 const tallFile = path.join(OUT, "_full.png");
 execFileSync(
   CHROME,
