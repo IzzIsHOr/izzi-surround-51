@@ -12,6 +12,55 @@ const DEFAULTS = {
   boost: 1, fill: false
 };
 
+
+// What a settings patch is allowed to contain.
+//
+// Both ends of the bridge are reachable from the page: any script on
+// youtube.com can dispatch a yt51-save or a yt51-settings CustomEvent, because
+// CustomEvents on `document` are not private to the extension. Unchecked, that
+// let a page write arbitrary keys into chrome.storage.sync -- filling the
+// 100 KB quota so the user's real settings stop saving -- and push arbitrary
+// numbers straight into the audio nodes, where a preamp of +60 dB is a genuine
+// way to hurt someone wearing headphones.
+//
+// So nothing crosses without being checked against this. Unknown keys are
+// dropped, numbers are clamped, booleans are coerced.
+const SCHEMA = {
+  enabled:    { type: 'bool' },
+  autoEnable: { type: 'bool' },
+  fill:       { type: 'bool' },
+  surr:       { type: 'num', min: 0,    max: 1.5 },
+  surrDelay:  { type: 'num', min: 0,    max: 60 },
+  surrLP:     { type: 'num', min: 500,  max: 20000 },
+  lfeLP:      { type: 'num', min: 40,   max: 250 },
+  preamp:     { type: 'num', min: -24,  max: 6 },
+  boost:      { type: 'num', min: 1,    max: 5 },
+  gFL:        { type: 'num', min: -24,  max: 12 },
+  gFR:        { type: 'num', min: -24,  max: 12 },
+  gC:         { type: 'num', min: -24,  max: 12 },
+  gLFE:       { type: 'num', min: -24,  max: 12 },
+  gRL:        { type: 'num', min: -24,  max: 12 },
+  gRR:        { type: 'num', min: -24,  max: 12 }
+};
+
+function sanitize(patch) {
+  const out = {};
+  if (!patch || typeof patch !== 'object') return out;
+  for (const key of Object.keys(SCHEMA)) {
+    if (!(key in patch)) continue;
+    const rule = SCHEMA[key];
+    const v = patch[key];
+    if (rule.type === 'bool') {
+      out[key] = Boolean(v);
+    } else {
+      const n = Number(v);
+      if (!Number.isFinite(n)) continue;
+      out[key] = Math.min(rule.max, Math.max(rule.min, n));
+    }
+  }
+  return out;
+}
+
 function push(settings) {
   document.dispatchEvent(new CustomEvent('yt51-settings', { detail: JSON.stringify(settings) }));
 }
@@ -27,7 +76,8 @@ document.addEventListener('yt51-request', load);
 document.addEventListener('yt51-save', e => {
   let patch;
   try { patch = JSON.parse(e.detail); } catch (err) { return; }
-  chrome.storage.sync.set(patch);
+  const clean = sanitize(patch);
+  if (Object.keys(clean).length) chrome.storage.sync.set(clean);
 });
 
 // changes from the options page or the popup land in open tabs immediately
