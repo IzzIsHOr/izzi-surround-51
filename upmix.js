@@ -208,7 +208,16 @@
   // actually want in fullscreen. This is CSS only: the element is never moved
   // or resized in JS, so nothing here can disturb the audio graph.
 
+  // The container has to be given a box first. Measured on a real watch page,
+  // .html5-video-container computes to 648x0: it is position:relative with no
+  // height of its own, because the player sizes the <video> in pixels instead.
+  // height:100% on the video alone therefore resolves against zero, the video
+  // collapses, and the screen goes black. Filling the container fixes it.
   const FILL_CSS = [
+    '.izzi-fill .html5-video-container {',
+    '  position: absolute !important;',
+    '  inset: 0 !important;',
+    '}',
     '.izzi-fill video.html5-main-video, .izzi-fill video.video-stream {',
     '  width: 100% !important;',
     '  height: 100% !important;',
@@ -270,7 +279,7 @@
       console.warn(TAG, 'picture-in-picture:', e.name, e.message);
       // NotAllowedError means the call did not carry a user gesture
       return { ok: false, reason: e.name === 'NotAllowedError'
-        ? 'needs a click in the page; use the player menu or Alt+P'
+        ? 'needs a click in the page; use the toggle in the player settings menu'
         : e.message };
     }
   }
@@ -381,13 +390,6 @@
   const resume = () => { if (ctx && ctx.state === 'suspended') ctx.resume(); };
   ['click', 'keydown', 'play', 'pointerdown'].forEach(e =>
     document.addEventListener(e, resume, true));
-
-  document.addEventListener('keydown', e => {
-    if (!e.altKey || e.ctrlKey || e.metaKey) return;
-    if (e.code === 'Digit5') { e.preventDefault(); setEnabled(!S.enabled); }
-    else if (e.code === 'KeyF') { e.preventDefault(); setFill(!S.fill); }
-    else if (e.code === 'KeyP') { e.preventDefault(); togglePip(); }
-  }, true);
 
   new MutationObserver(attach).observe(document.documentElement, { childList: true, subtree: true });
   window.addEventListener('yt-navigate-finish', () => setTimeout(attach, 600));

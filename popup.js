@@ -82,14 +82,15 @@ $("pip").addEventListener("click", async () => {
     if (r && r.ok) {
       btn.textContent = r.active ? "Close" : "Open";
       btn.classList.toggle("on", !!r.active);
-      note.className = "note";
-      note.textContent = "Alt+5 surround · Alt+F fill · Alt+P picture-in-picture";
+      note.hidden = true;
     } else {
       note.className = "note warn";
+      note.hidden = false;
       note.textContent = (r && r.reason) || "Picture-in-picture was refused.";
     }
   } catch {
     note.className = "note warn";
+    note.hidden = false;
     note.textContent = "Reload the YouTube tab, then try again.";
   }
   btn.disabled = false;
