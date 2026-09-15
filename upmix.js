@@ -27,12 +27,14 @@
   const S = {
     enabled: true, autoEnable: true,
     surr: 0.6, surrDelay: 15, surrLP: 7000, lfeLP: 120, preamp: -2,
-    gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0
+    gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0,
+    boost: 1,     // 1 = untouched, up to 5x past YouTube's own ceiling
+    fill: false   // crop the video to fill the player instead of letterboxing
   };
 
   const dB = v => Math.pow(10, v / 20);
 
-  let ctx, src, video, gBypass, gOut, N = null, M = null;
+  let ctx, src, video, gBypass, gOut, gBoost, limiter, N = null, M = null;
   let built = false;
 
   // ---------------------------- audio graph ----------------------------
@@ -50,12 +52,26 @@
 
       src = ctx.createMediaElementSource(v);
 
+      // Extra volume sits first, so it lifts both the 5.1 path and the bypass.
+      // Boosting a already-loud mix clips hard, so a limiter follows: it only
+      // bites on peaks above -1 dBFS and is inaudible while boost is 1.
+      gBoost = ctx.createGain();
+      gBoost.gain.value = S.boost;
+      limiter = ctx.createDynamicsCompressor();
+      limiter.threshold.value = -1;
+      limiter.knee.value = 0;
+      limiter.ratio.value = 20;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.1;
+      src.connect(gBoost);
+      gBoost.connect(limiter);
+
       // Safety: createMediaElementSource diverts audio away from the default
       // output. The bypass is wired first, at unity, so any failure below
       // leaves sound playing instead of killing it.
       gBypass = ctx.createGain();
       gBypass.gain.value = 1;
-      src.connect(gBypass);
+      limiter.connect(gBypass);
       gBypass.connect(dst);
 
       dst.channelCount = 6;
@@ -66,7 +82,7 @@
       const lowpass = f => { const n = ctx.createBiquadFilter(); n.type = 'lowpass'; n.frequency.value = f; return n; };
 
       const sp = ctx.createChannelSplitter(2);
-      src.connect(sp);
+      limiter.connect(sp);
       const mg = ctx.createChannelMerger(6);
 
       // (L+R)/2 feeds centre and LFE
@@ -157,6 +173,7 @@
     N.oLFE.gain.value = dB(S.gLFE);
     N.oRL.gain.value = dB(S.gRL);
     N.oRR.gain.value = dB(S.gRR);
+    gBoost.gain.value = S.boost;
     gOut.gain.value = S.enabled ? dB(S.preamp) : 0;
     gBypass.gain.value = S.enabled ? 0 : 1;
     document.querySelectorAll('.izzi-surround-item').forEach(el =>
@@ -180,8 +197,102 @@
     try { incoming = JSON.parse(e.detail); } catch (err) { return; }
     Object.assign(S, incoming);
     applyAll();
+    applyFill();
   });
   document.dispatchEvent(new CustomEvent('yt51-request'));
+
+  // ---------------------------- fill screen ----------------------------
+  //
+  // A 16:9 video on a 4:3 or ultrawide monitor letterboxes. Cropping it to
+  // cover the player loses the edges but fills the screen, which is what people
+  // actually want in fullscreen. This is CSS only: the element is never moved
+  // or resized in JS, so nothing here can disturb the audio graph.
+
+  const FILL_CSS = [
+    '.izzi-fill video.html5-main-video, .izzi-fill video.video-stream {',
+    '  width: 100% !important;',
+    '  height: 100% !important;',
+    '  left: 0 !important;',
+    '  top: 0 !important;',
+    '  object-fit: cover !important;',
+    '}'
+  ].join('\n');
+
+  function ensureFillStyle() {
+    if (document.getElementById('izzi-fill-style')) return;
+    const st = document.createElement('style');
+    st.id = 'izzi-fill-style';
+    st.textContent = FILL_CSS; // textContent, not innerHTML: Trusted Types
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  function applyFill() {
+    ensureFillStyle();
+    const player = document.querySelector('#movie_player, .html5-video-player');
+    if (player) player.classList.toggle('izzi-fill', !!S.fill);
+    document.querySelectorAll('.izzi-fill-item').forEach(el =>
+      el.setAttribute('aria-checked', S.fill ? 'true' : 'false'));
+  }
+
+  function setFill(v) {
+    S.fill = v;
+    applyFill();
+    save({ fill: v });
+    console.log(TAG, 'fill screen', v ? 'on' : 'off');
+  }
+
+  // ------------------------- picture in picture -------------------------
+  //
+  // Native PiP, not the Document variety. It has no window decoration, sizes
+  // itself to the video and stays on top, and it leaves the <video> element in
+  // the page: measured, the six channel graph keeps running untouched while it
+  // is open. Document PiP moves the element into another document, which would
+  // strand createMediaElementSource, and it cannot be called twice on one
+  // element.
+
+  function pipActive() {
+    return document.pictureInPictureElement != null;
+  }
+
+  async function togglePip() {
+    try {
+      if (pipActive()) {
+        await document.exitPictureInPicture();
+      } else {
+        const v = document.querySelector('video');
+        if (!v) return { ok: false, reason: 'no video on this page' };
+        if (v.disablePictureInPicture) v.disablePictureInPicture = false;
+        await v.requestPictureInPicture();
+      }
+      markPip();
+      return { ok: true, active: pipActive() };
+    } catch (e) {
+      console.warn(TAG, 'picture-in-picture:', e.name, e.message);
+      // NotAllowedError means the call did not carry a user gesture
+      return { ok: false, reason: e.name === 'NotAllowedError'
+        ? 'needs a click in the page; use the player menu or Alt+P'
+        : e.message };
+    }
+  }
+
+  function markPip() {
+    document.querySelectorAll('.izzi-pip-item').forEach(el =>
+      el.setAttribute('aria-checked', pipActive() ? 'true' : 'false'));
+  }
+
+  document.addEventListener('enterpictureinpicture', markPip, true);
+  document.addEventListener('leavepictureinpicture', markPip, true);
+
+  // the popup asks for things it cannot do itself
+  document.addEventListener('yt51-command', async e => {
+    const what = e.detail;
+    if (what === 'pip') {
+      const r = await togglePip();
+      document.dispatchEvent(new CustomEvent('yt51-command-result', {
+        detail: JSON.stringify(r)
+      }));
+    }
+  });
 
   // ------------------- toggle inside the player settings -------------------
   // No innerHTML anywhere: YouTube enforces Trusted Types and would throw.
@@ -191,47 +302,69 @@
     return n;
   }
 
-  function icon() {
+  const PATH = {
+    speaker: 'M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-5.2l1.7 2.4-.8.6-2.1-3H8.4l-2.1 3-.8-.6L7.2 16H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm0 1v9h16V6H4zm8 1.6a2.9 2.9 0 1 1 0 5.8 2.9 2.9 0 0 1 0-5.8zm0 1.2a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4zM5.6 7.2h1.6v1.6H5.6V7.2zm11.2 0h1.6v1.6h-1.6V7.2z',
+    fill: 'M3 5h18v14H3V5zm1.5 1.5v11h15v-11h-15zM8 9.2l-2 2.8 2 2.8V9.2zm8 0v5.6l2-2.8-2-2.8z',
+    pip: 'M3 5h18v14H3V5zm1.5 1.5v11h15v-11h-15zM12 12h7v5h-7v-5z'
+  };
+
+  function icon(path) {
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('height', '24');
     svg.setAttribute('width', '24');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('fill', '#fff');
     const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', 'M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-5.2l1.7 2.4-.8.6-2.1-3H8.4l-2.1 3-.8-.6L7.2 16H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm0 1v9h16V6H4zm8 1.6a2.9 2.9 0 1 1 0 5.8 2.9 2.9 0 0 1 0-5.8zm0 1.2a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4zM5.6 7.2h1.6v1.6H5.6V7.2zm11.2 0h1.6v1.6h-1.6V7.2z');
+    p.setAttribute('d', path || PATH.speaker);
     svg.appendChild(p);
     return svg;
+  }
+
+  function menuItem(cls, label, path, checked, onClick) {
+    const item = el('div', 'ytp-menuitem ' + cls);
+    item.setAttribute('role', 'menuitemcheckbox');
+    item.setAttribute('aria-checked', checked ? 'true' : 'false');
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('aria-label', label);
+
+    const ic = el('div', 'ytp-menuitem-icon');
+    ic.appendChild(icon(path));
+    const lb = el('div', 'ytp-menuitem-label');
+    lb.textContent = label;
+    const ct = el('div', 'ytp-menuitem-content');
+    ct.appendChild(el('div', 'ytp-menuitem-toggle-checkbox'));
+    item.append(ic, lb, ct);
+    item.addEventListener('click', ev => {
+      ev.stopPropagation();
+      onClick();
+    });
+    return item;
   }
 
   function injectMenuItem() {
     const menu = document.querySelector('.ytp-settings-menu .ytp-panel-menu');
     if (!menu || menu.querySelector('.izzi-surround-item')) return;
 
-    const item = el('div', 'ytp-menuitem izzi-surround-item');
-    item.setAttribute('role', 'menuitemcheckbox');
-    item.setAttribute('aria-checked', S.enabled ? 'true' : 'false');
-    item.setAttribute('tabindex', '0');
-    item.setAttribute('aria-label', LABEL);
-
-    const ic = el('div', 'ytp-menuitem-icon');
-    ic.appendChild(icon());
-    const lb = el('div', 'ytp-menuitem-label');
-    lb.textContent = LABEL;
-    const ct = el('div', 'ytp-menuitem-content');
-    ct.appendChild(el('div', 'ytp-menuitem-toggle-checkbox'));
-    item.append(ic, lb, ct);
-    item.addEventListener('click', e => {
-      e.stopPropagation();
-      setEnabled(!S.enabled);
-    });
+    const items = [
+      menuItem('izzi-surround-item', LABEL, PATH.speaker, S.enabled,
+        () => setEnabled(!S.enabled)),
+      menuItem('izzi-fill-item', 'Fill screen', PATH.fill, S.fill,
+        () => setFill(!S.fill)),
+      menuItem('izzi-pip-item', 'Picture-in-picture', PATH.pip, pipActive(),
+        () => togglePip())
+    ];
 
     // sit right under "Voice boost", falling back to "Stable Volume"
     const lab = e => (e.getAttribute('aria-label') || '');
     const kids = Array.prototype.slice.call(menu.children);
     const anchor = kids.find(e => /voice boost/i.test(lab(e)))
       || kids.find(e => /stable volume/i.test(lab(e)));
-    if (anchor) menu.insertBefore(item, anchor.nextSibling);
-    else menu.appendChild(item);
+
+    let at = anchor ? anchor.nextSibling : null;
+    for (const it of items) {
+      if (at) menu.insertBefore(it, at);
+      else menu.appendChild(it);
+    }
   }
 
   // ------------------------------ startup ------------------------------
@@ -242,6 +375,7 @@
       if (build(v) && S.autoEnable && !S.enabled) setEnabled(true);
     }
     injectMenuItem();
+    applyFill(); // YouTube rebuilds the player on navigation and drops the class
   }
 
   const resume = () => { if (ctx && ctx.state === 'suspended') ctx.resume(); };
@@ -249,7 +383,10 @@
     document.addEventListener(e, resume, true));
 
   document.addEventListener('keydown', e => {
-    if (e.altKey && e.code === 'Digit5') { e.preventDefault(); setEnabled(!S.enabled); }
+    if (!e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.code === 'Digit5') { e.preventDefault(); setEnabled(!S.enabled); }
+    else if (e.code === 'KeyF') { e.preventDefault(); setFill(!S.fill); }
+    else if (e.code === 'KeyP') { e.preventDefault(); togglePip(); }
   }, true);
 
   new MutationObserver(attach).observe(document.documentElement, { childList: true, subtree: true });
@@ -267,8 +404,10 @@
       outputChannels: gOut && gOut.channelCount,
       settings: Object.assign({}, S)
     }),
-    set: patch => { Object.assign(S, patch); applyAll(); save(patch); return S; },
+    set: patch => { Object.assign(S, patch); applyAll(); applyFill(); save(patch); return S; },
     on: setEnabled,
+    fill: setFill,
+    pip: togglePip,
 
     // Live values read back off the audio nodes themselves, not off the
     // settings object. If a control ever looks inert, compare this with
@@ -283,6 +422,8 @@
         C: +N.oC.gain.value.toFixed(3), LFE: +N.oLFE.gain.value.toFixed(3),
         RL: +N.oRL.gain.value.toFixed(3), RR: +N.oRR.gain.value.toFixed(3)
       },
+      boost: +gBoost.gain.value.toFixed(3),
+      limiterReductionDb: +limiter.reduction.toFixed(2),
       outputGain: +gOut.gain.value.toFixed(3),
       bypassGain: +gBypass.gain.value.toFixed(3)
     } : 'graph not built',

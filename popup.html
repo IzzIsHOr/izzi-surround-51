@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>IzzI 5.1 YouTube</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 5.5v13l11-6.5-11-6.5z" />
+      </svg>
+      <div>
+        <b>IzzI 5.1 YouTube</b>
+        <small id="where">checking the tab…</small>
+      </div>
+    </header>
+
+    <div id="panel">
+      <div class="row">
+        <div class="label">
+          <span>Extra volume</span>
+          <small id="boostHint">Past YouTube's own ceiling</small>
+        </div>
+        <div class="control wide">
+          <input id="boost" type="range" min="1" max="5" step="0.1" value="1" />
+          <span class="val" id="boostVal">1.0×</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">
+          <span>5.1 surround</span>
+          <small>Upmix stereo to six channels</small>
+        </div>
+        <div class="control">
+          <button class="gear" id="options" title="Surround options">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+          <label class="switch">
+            <input type="checkbox" id="enabled" />
+            <span class="track"><span class="knob"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">
+          <span>Fill screen</span>
+          <small>Crop to fill instead of letterboxing</small>
+        </div>
+        <div class="control">
+          <label class="switch">
+            <input type="checkbox" id="fill" />
+            <span class="track"><span class="knob"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">
+          <span>Picture-in-picture</span>
+          <small>A floating window, no border</small>
+        </div>
+        <div class="control">
+          <button class="btn" id="pip">Open</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="note" id="note">Alt+5 surround · Alt+F fill · Alt+P picture-in-picture</p>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

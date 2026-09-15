@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "IzzI Surround 5.1",
-  "version": "3.2.1",
+  "name": "IzzI 5.1 YouTube Enhancements",
+  "version": "4.0.0",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj2VlekfcESOrU9uMZeP0tIb5d+323RESuO4f5hW2tOzBlrsXLwubei7C0qQuHHH1EZXtF03u53TnL5p/9fa92H06VdE4nTQK9qjz+iL3PGxPLw1RSACPe6iZ/lJnAiqnnUCYshZ+vAqAlImIc0BKs0o//19xErQ+wr+bNmIUERMvaMLsnXuq1jMy0V6NYOQojYiIqwo//dv7X0PeHWbM1va6LdsQBm2RWFdJLYysbbLgQsrWwQITV6HKaCmNLD1Y5BEnfbKR3LZkhEpldj5sDLpNC+/lnMRtoQ1nA8ZvKgCoOecsWY41fetd9f+63i9RRaoqmadzePCH482GEQm46wIDAQAB",
-  "description": "Discrete 5.1 upmixing for YouTube, right in the browser. Player toggle, per-channel mixer, nothing installed system-wide.",
+  "description": "Real 5.1 surround for YouTube, plus extra volume, fill-screen crop and one-click picture-in-picture.",
   "author": "IzzIsHOr",
   "homepage_url": "https://github.com/IzzIsHOr/izzi-surround-51",
   "permissions": [
@@ -19,12 +19,13 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "IzzI Surround 5.1",
+    "default_title": "IzzI 5.1 YouTube",
+    "default_popup": "popup.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/play16.png",
+      "32": "icons/play32.png",
+      "48": "icons/play48.png",
+      "128": "icons/play128.png"
     }
   },
   "options_ui": {

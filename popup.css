@@ -1,0 +1,200 @@
+/* The toolbar panel. Follows the browser's light/dark setting, like the
+   options page, so it never looks pasted on. */
+
+:root {
+  --bg: #ffffff;
+  --fg: #1f2329;
+  --muted: #6b7280;
+  --line: #e6e8ec;
+  --accent: #ef4444;
+  --raise: #f5f6f8;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1e23;
+    --fg: #eceef1;
+    --muted: #9aa0a6;
+    --line: #2c3037;
+    --raise: #23262c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 320px;
+  margin: 0;
+  padding: 0 0 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+header .mark {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  fill: var(--accent);
+}
+
+header b {
+  display: block;
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+header small {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+  margin-top: 1px;
+}
+
+/* off a YouTube tab there is nothing to control, so say so rather than
+   offering switches that quietly do nothing */
+body.inactive #panel { opacity: 0.4; pointer-events: none; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child { border-bottom: none; }
+
+.label { flex: 1; min-width: 0; }
+.label span { display: block; }
+.label small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+
+.control { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.control.wide { flex: 0 0 148px; }
+
+/* range */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 18px;
+  background: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--fill, 0%),
+    color-mix(in srgb, var(--fg) 16%, transparent) var(--fill, 0%)
+  );
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.13s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.18); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.3); }
+
+.val {
+  width: 40px;
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+/* switch */
+
+.switch { display: inline-flex; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.switch .track {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--fg) 18%, transparent);
+  transition: background 0.16s ease;
+}
+
+.switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.16s ease;
+}
+
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track .knob { transform: translateX(16px); }
+
+/* buttons */
+
+.btn, .gear {
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--fg);
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.13s ease, transform 0.1s ease;
+}
+
+.btn { padding: 6px 13px; }
+.btn:hover, .gear:hover { border-color: var(--muted); }
+.btn:active, .gear:active { transform: scale(0.96); }
+.btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.gear {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.gear svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.note {
+  margin: 10px 16px 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.note.warn { color: var(--accent); }
