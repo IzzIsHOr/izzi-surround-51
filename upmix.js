@@ -1,4 +1,4 @@
-// IzzI Surround 5.1
+// IzzI 5.1 YouTube Enhancements
 // https://github.com/IzzIsHOr/izzi-surround-51
 //
 // Lifts YouTube audio to discrete 5.1 in the browser, using Web Audio.
@@ -20,9 +20,9 @@
 (function () {
   'use strict';
 
-  const TAG = '[IzzI Surround 5.1]';
+  const TAG = '[IzzI 5.1 YouTube]';
   const NS = 'http://www.w3.org/2000/svg';
-  const LABEL = 'IzzI Surround 5.1';
+  const LABEL = 'IzzI 5.1 surround';
 
   const S = {
     enabled: true, autoEnable: true,
@@ -33,6 +33,10 @@
   };
 
   const dB = v => Math.pow(10, v / 20);
+
+  // 1:1 is a straight wire. Only once the signal is actually being lifted does
+  // the limiter need to hold the peaks down.
+  const limiterRatio = boost => (boost > 1.01 ? 20 : 1);
 
   let ctx, src, video, gBypass, gOut, gBoost, limiter, N = null, M = null;
   let built = false;
@@ -53,14 +57,19 @@
       src = ctx.createMediaElementSource(v);
 
       // Extra volume sits first, so it lifts both the 5.1 path and the bypass.
-      // Boosting a already-loud mix clips hard, so a limiter follows: it only
-      // bites on peaks above -1 dBFS and is inaudible while boost is 1.
+      // Boosting an already loud mix clips hard, so a limiter follows.
+      //
+      // Its ratio is driven by the boost, not left at 20:1. A modern master
+      // already peaks near 0 dBFS, so a permanent 20:1 above -1 dBFS would
+      // squash ordinary material even with the volume untouched, quietly
+      // changing how everything sounds. At ratio 1 the node passes the signal
+      // through unaltered, which is what an unboosted stream should get.
       gBoost = ctx.createGain();
       gBoost.gain.value = S.boost;
       limiter = ctx.createDynamicsCompressor();
       limiter.threshold.value = -1;
       limiter.knee.value = 0;
-      limiter.ratio.value = 20;
+      limiter.ratio.value = limiterRatio(S.boost);
       limiter.attack.value = 0.003;
       limiter.release.value = 0.1;
       src.connect(gBoost);
@@ -174,6 +183,7 @@
     N.oRL.gain.value = dB(S.gRL);
     N.oRR.gain.value = dB(S.gRR);
     gBoost.gain.value = S.boost;
+    limiter.ratio.value = limiterRatio(S.boost);
     gOut.gain.value = S.enabled ? dB(S.preamp) : 0;
     gBypass.gain.value = S.enabled ? 0 : 1;
     document.querySelectorAll('.izzi-surround-item').forEach(el =>
@@ -237,8 +247,10 @@
 
   function applyFill() {
     ensureFillStyle();
-    const player = document.querySelector('#movie_player, .html5-video-player');
-    if (player) player.classList.toggle('izzi-fill', !!S.fill);
+    // querySelectorAll, not querySelector: YouTube keeps a miniplayer around
+    // alongside the main one, and only the first would ever get the class.
+    document.querySelectorAll('#movie_player, .html5-video-player').forEach(p =>
+      p.classList.toggle('izzi-fill', !!S.fill));
     document.querySelectorAll('.izzi-fill-item').forEach(el =>
       el.setAttribute('aria-checked', S.fill ? 'true' : 'false'));
   }

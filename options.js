@@ -1,12 +1,18 @@
+// Reset writes this whole object, so anything missing here survives a reset.
+// boost and fill have to be listed even though this page has no control for
+// them, or "Reset to defaults" leaves the volume at 5x and the crop switched on.
 const DEFAULTS = {
   enabled: true, autoEnable: true,
   surr: 0.6, surrDelay: 15, surrLP: 7000, lfeLP: 120, preamp: -2,
-  gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0
+  gFL: 0, gFR: 0, gC: 0, gLFE: 0, gRL: 0, gRR: 0,
+  boost: 1, fill: false
 };
 
 // A preset captures the sound, not the on/off state -- loading one should never
 // silently mute or unmute the extension.
-const SOUND_KEYS = ['surr', 'surrDelay', 'surrLP', 'lfeLP', 'preamp',
+// What a preset captures. Extra volume is part of how something sounds, so it
+// belongs; fill screen is a picture setting and does not.
+const SOUND_KEYS = ['surr', 'surrDelay', 'surrLP', 'lfeLP', 'preamp', 'boost',
                     'gFL', 'gFR', 'gC', 'gLFE', 'gRL', 'gRR'];
 
 const BUILTINS = {
@@ -47,7 +53,7 @@ function commit() {
 
   chrome.storage.sync.set(patch, () => {
     if (chrome.runtime.lastError) {
-      console.warn('[IzzI Surround 5.1] write failed:', chrome.runtime.lastError.message);
+      console.warn('[IzzI 5.1 YouTube] write failed:', chrome.runtime.lastError.message);
       flash('Throttled');
     } else {
       flash();
@@ -217,7 +223,7 @@ function savePreset() {
     data.presets[name] = currentSound();
     chrome.storage.sync.set({ presets: data.presets }, () => {
       if (chrome.runtime.lastError) {
-        console.warn('[IzzI Surround 5.1] preset save failed:', chrome.runtime.lastError.message);
+        console.warn('[IzzI 5.1 YouTube] preset save failed:', chrome.runtime.lastError.message);
         flash('Throttled');
         return;
       }
