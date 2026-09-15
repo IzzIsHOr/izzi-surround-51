@@ -97,6 +97,9 @@ processing happens locally in the tab. The storage permission holds nothing but
 your own settings.
 
 Open source, MIT licensed: https://github.com/IzzIsHOr/izzi-surround-51
+
+Free, and staying that way. If it made your evening sound better and you feel
+like it: https://buymeacoffee.com/izzishor
 ```
 
 ## Category
