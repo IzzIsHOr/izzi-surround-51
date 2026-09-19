@@ -157,6 +157,7 @@ output {
 .ico[data-ico="level"]::before  { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M4 20h3V10H4v10zm6.5 0h3V4h-3v16zM17 20h3v-7h-3v7z"/></svg>'); }
 
 .ico[data-ico="preset"]::before { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 2l2.9 6.2 6.6.9-4.8 4.7 1.2 6.7L12 17.3 6.1 20.5l1.2-6.7L2.5 9.1l6.6-.9z"/></svg>'); }
+.ico[data-ico="move"]::before   { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M7 4L3 8l4 4V9h10V7H7zm10 16l4-4-4-4v3H7v2h10z"/></svg>'); }
 .ico[data-ico="save"]::before   { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M5 3h11l3 3v15H5zm2 2v5h8V5zm2 9h6v5H9z"/></svg>'); }
 
 /* ---------- sliders (YouTube volume-bar styling) ---------- */

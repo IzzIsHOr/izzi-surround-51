@@ -35,7 +35,13 @@ picture-in-picture are also in the player's settings gear, next to Voice boost.
 
 The options page has the full mixer: rear width, rear delay, rear low-pass,
 subwoofer crossover, headroom, and individual dB trim for all six channels,
-with savable presets.
+with savable presets. Presets export to a file and import back, in the same
+format as IzzI 5.1 for Windows, so they move between the two.
+
+## Every app, not just YouTube
+
+[IzzI 5.1 for Windows](http://upmix.izzishor.uk/) is the same upmix for the
+whole system: Spotify, a browser, anything that plays in stereo.
 
 ## Install
 

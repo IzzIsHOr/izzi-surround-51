@@ -29,9 +29,9 @@ const BUILTINS = {
 const badge = document.getElementById('saved');
 let badgeTimer;
 
-function flash(text) {
+function flash(text, warn) {
   badge.textContent = text || 'Saved';
-  badge.classList.toggle('warn', text === 'Throttled');
+  badge.classList.toggle('warn', !!warn || text === 'Throttled');
   badge.classList.add('on');
   clearTimeout(badgeTimer);
   badgeTimer = setTimeout(() => badge.classList.remove('on'), 1200);
@@ -238,6 +238,80 @@ document.getElementById('savePreset').addEventListener('click', savePreset);
 nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') savePreset(); });
 
 chrome.storage.sync.get({ presets: {} }, data => renderPresets(data.presets));
+
+// ---------- export / import ----------
+// The same file IzzI 5.1 for Windows reads and writes: these key names, inside
+// { app, format, presets }. Windows adds "fade", which is simply not used here,
+// and has no "boost", which falls back to 1x. Anything in a file is untrusted:
+// only the sound keys are kept, each a finite number clamped to the range the
+// content script accepts (bridge.js SCHEMA), and a preset without "surr" is not
+// taken for a preset at all.
+const RANGES = {
+  surr: [0, 1.5], surrDelay: [0, 60], surrLP: [500, 20000], lfeLP: [40, 250], preamp: [-24, 6], boost: [1, 5],
+  gFL: [-24, 12], gFR: [-24, 12], gC: [-24, 12], gLFE: [-24, 12], gRL: [-24, 12], gRR: [-24, 12]
+};
+
+function cleanPreset(p) {
+  if (!p || typeof p !== 'object' || typeof p.surr !== 'number') return null;
+  const out = {};
+  for (const [k, [lo, hi]] of Object.entries(RANGES)) {
+    const fallback = k === 'boost' ? 1 : BUILTINS.Balanced[k];
+    const v = Number(k in p ? p[k] : fallback);
+    if (!Number.isFinite(v)) return null;
+    out[k] = Math.min(hi, Math.max(lo, v));
+  }
+  return out;
+}
+
+document.getElementById('exportPresets').addEventListener('click', () => {
+  chrome.storage.sync.get({ presets: {} }, data => {
+    if (!Object.keys(data.presets).length) { flash('Save one first', true); return; }
+    const file = { app: 'IzzI 5.1', format: 1, presets: data.presets };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2) + '\n'], { type: 'application/json' }));
+    const a = el('a');
+    a.href = url;
+    a.download = 'IzzI 5.1 presets.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    flash('Exported');
+  });
+});
+
+const importFile = document.getElementById('importFile');
+document.getElementById('importPresets').addEventListener('click', () => importFile.click());
+importFile.addEventListener('change', () => {
+  const file = importFile.files[0];
+  importFile.value = '';
+  if (!file) return;
+  if (file.size > 256 * 1024) { flash('Not a preset file', true); return; }
+  file.text().then(text => {
+    let root;
+    try { root = JSON.parse(text); } catch (e) { flash('Not a preset file', true); return; }
+    // an export file, or the bare { name: preset } map this page keeps in storage
+    const map = root && typeof root.presets === 'object' ? root.presets : root;
+    const found = {};
+    if (map && typeof map === 'object') {
+      for (const [name, p] of Object.entries(map)) {
+        const n = String(name).replace(/[ -]/g, '').trim().slice(0, 32);
+        const clean = cleanPreset(p);
+        if (n && clean && !(n in BUILTINS)) found[n] = clean;
+      }
+    }
+    const count = Object.keys(found).length;
+    if (!count) { flash('No presets in it', true); return; }
+    chrome.storage.sync.get({ presets: {} }, data => {
+      const merged = Object.assign({}, data.presets, found);
+      chrome.storage.sync.set({ presets: merged }, () => {
+        // sync storage holds about 8 KB per item: some forty presets
+        if (chrome.runtime.lastError) { flash('Too many presets', true); return; }
+        renderPresets(merged);
+        flash(count === 1 ? 'Imported 1' : `Imported ${count}`);
+      });
+    });
+  });
+});
 
 // ---------- speaker configuration check ----------
 // The output device is the same one YouTube tabs render to, so probing it here
